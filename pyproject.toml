@@ -17,4 +17,8 @@ dependencies = [
 ]
 
 [project.scripts]
-bsk-git-viewer = "bsk_git_viewer.cli:app"
+bsk-git-viewer = "bsk_git_viewer.cli:cmd_app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
