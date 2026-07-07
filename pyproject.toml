@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "bks-git-viewer"
+name = "bsk-git-viewer"
 version = "0.1.0"
 description = "Interactive Git Commands Viewer"
 requires-python = ">=3.10"
@@ -17,4 +17,4 @@ dependencies = [
 ]
 
 [project.scripts]
-bks-git-viewer = "bks_git_viewer.cli:app"
+bsk-git-viewer = "bsk_git_viewer.cli:app"
