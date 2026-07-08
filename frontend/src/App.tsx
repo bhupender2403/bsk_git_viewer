@@ -1,5 +1,6 @@
 import { useEffect,useState} from "react";
 import RepoTimeLine from "./components/RepoTimeLine/RepoTimeLine";
+import RepositoryPage from "./pages/RepositoryPage";
 
 function App(){
 
@@ -10,7 +11,7 @@ function App(){
     .then((res)=> res.json()).then(setData)
   },[])
 
-  return <RepoTimeLine repo={data} />;
+  return <RepositoryPage repo={data} />;
 
 }
 

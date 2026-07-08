@@ -1,6 +1,7 @@
 import type { ResponseData } from "../../types/git";
-import { formatCommitTime } from "../../utils/time";
+import CommitMarker from "./CommitMarker";
 import "./RepoTimeLine.css"
+import TimeLineTicks from "./TimeLineTicks";
 
 
 
@@ -57,33 +58,16 @@ export default function RepoTimeLine({repo}:RepoTimeLineProps){
         
         <div className="timeline-wrapper">
             <div className="timeline-line"/>
-                {ticks.map((tick, index) => (
-                <div
-                    key={index}
-                    className="timeline-tick"
-                    style={{ left: tick.left }}
-                >
-                    <div className="tick-line" />
-                    <div className="tick-label">{formatCommitTime(tick.time)}</div>
-                </div>
+                <TimeLineTicks ticks={ticks} />
+
+                {commits.map((commit) => (
+                    <CommitMarker
+                        key={commit.commit_id}
+                        commit={commit}
+                        left={getLeft(commit.commit_time)}
+                    />
                 ))}
-
-                {commits.map((commit) =>(
-                    <div key={commit.commit_id} className="commit-point" style ={{left:getLeft(commit.commit_time)}}>
-                        <div className="commit-circle">
-                        </div>
-                        <div className="commit-card">
-                            <strong>{commit.message.split("\n")[0]}</strong>
-
-                            <p>{formatCommitTime(commit.commit_time)}</p>
-
-                            <p>{commit.author}</p>
-
-                            <code>{commit.commit_id.substring(0, 7)}</code>
-                            </div>
-                    </div>
-                ))
-                }
+                
             </div>
     </div>)
     
