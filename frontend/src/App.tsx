@@ -1,4 +1,5 @@
 import { useEffect,useState} from "react";
+import RepoTimeLine from "./components/RepoTimeLine/RepoTimeLine";
 
 function App(){
 
@@ -9,12 +10,7 @@ function App(){
     .then((res)=> res.json()).then(setData)
   },[])
 
-  return (
-    <main>
-      <h1>BSK Git Viewer</h1>
-      <pre>{JSON.stringify(data,null,2)}</pre>
-    </main>
-  )
+  return <RepoTimeLine repo={data} />;
 
 }
 

@@ -22,5 +22,5 @@ def health_check():
 
 @app.get("/api/repository")
 def get_repository(path:str = "."):
-    return analyze_repository(path)
+    return analyze_repository(app.state.repo_path)
 
