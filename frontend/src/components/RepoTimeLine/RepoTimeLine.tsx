@@ -1,4 +1,5 @@
 import type { ResponseData } from "../../types/git";
+import { formatCommitTime } from "../../utils/time";
 import "./RepoTimeLine.css"
 
 
@@ -37,14 +38,7 @@ export default function RepoTimeLine({repo}:RepoTimeLineProps){
     const getLeft = (time:number):string =>
         `${((time - minTime) / range) * 100}%`;
 
-    const formatDate = (unixTime:number) =>
-        new Date(unixTime*1000).toLocaleString("en-In",{
-            day:"2-digit",
-            month:"short",
-            year:"numeric",
-            hour:"2-digit",
-            minute:"2-digit",
-        })
+
 
     const ticks = Array.from({ length: 5 }, (_, i) => {
         const time = minTime + (range * i)/4;
@@ -70,7 +64,7 @@ export default function RepoTimeLine({repo}:RepoTimeLineProps){
                     style={{ left: tick.left }}
                 >
                     <div className="tick-line" />
-                    <div className="tick-label">{formatDate(tick.time)}</div>
+                    <div className="tick-label">{formatCommitTime(tick.time)}</div>
                 </div>
                 ))}
 
@@ -81,7 +75,7 @@ export default function RepoTimeLine({repo}:RepoTimeLineProps){
                         <div className="commit-card">
                             <strong>{commit.message.split("\n")[0]}</strong>
 
-                            <p>{formatDate(commit.commit_time)}</p>
+                            <p>{formatCommitTime(commit.commit_time)}</p>
 
                             <p>{commit.author}</p>
 
