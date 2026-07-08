@@ -16,7 +16,7 @@
 .timeline-wrapper {
   position: relative;
   height: 80px;
-  margin: 40px 40px;
+  margin: 30px 30px;
 }
 
 .timeline-line {
@@ -30,7 +30,7 @@
 
 .timeline-tick {
   position: absolute;
-  top: 5px;
+  top: 6px;
   transform: translateX(-50%);
   text-align: center;
 }
@@ -51,16 +51,16 @@
 
 .commit-point {
   position: absolute;
-  top: 12px;
+  top: 15px;
   transform: translateX(-50%);
 }
 
 .commit-circle {
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   background: #0969da;
   border-radius: 50%;
-  border: 4px solid white;
+  border: 2px solid white;
   box-shadow: 0 0 0 2px #0969da;
   cursor: pointer;
 }
@@ -92,4 +92,8 @@
 
 .commit-point:hover .commit-card {
   display: block;
+}
+
+.commit-point:hover .commit-circle{
+  background: red;
 }
