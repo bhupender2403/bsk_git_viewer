@@ -1,26 +1,7 @@
+import type { ResponseData } from "../../types/git";
 import "./RepoTimeLine.css"
 
-interface Commit{
-    commit_id:string;
-    author:string;
-    message:string;
-    commit_time:number;
-    parents:string[];
-}
 
-interface RepoData{
-    name:string,
-    commits:Commit[],
-    brances:Record<string,string>
-}
-
-interface ResponseData{
-    status:string;
-    path:string;
-    git_path:string;
-    message:string;
-    data:RepoData;
-}
 
 interface RepoTimeLineProps{
     repo:ResponseData;
@@ -97,7 +78,15 @@ export default function RepoTimeLine({repo}:RepoTimeLineProps){
                     <div key={commit.commit_id} className="commit-point" style ={{left:getLeft(commit.commit_time)}}>
                         <div className="commit-circle">
                         </div>
+                        <div className="commit-card">
+                            <strong>{commit.message.split("\n")[0]}</strong>
 
+                            <p>{formatDate(commit.commit_time)}</p>
+
+                            <p>{commit.author}</p>
+
+                            <code>{commit.commit_id.substring(0, 7)}</code>
+                            </div>
                     </div>
                 ))
                 }
