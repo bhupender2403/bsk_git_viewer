@@ -14,10 +14,12 @@ dependencies = [
 	"uvicorn",
 	"typer",
 	"rich",
+	"dulwich",
 ]
 
 [project.scripts]
 bsk-git-viewer = "bsk_git_viewer.cli:cmd_app"
+bsk-git-debug = "bsk_git_viewer.debug:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
