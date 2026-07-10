@@ -1,0 +1,56 @@
+.timeline-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.timeline-canvas {
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.timeline-svg {
+  display: block;
+}
+
+.commit-id {
+  font-size: 13px;
+  font-weight: 700;
+  fill: #111827;
+}
+
+.commit-row {
+  display: flex;
+  gap: 40px;
+  padding-left: 35px;
+  margin-top: -40px;
+}
+
+.commit-card {
+  width: 140px;
+  min-height: 90px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.commit-hash {
+  font-weight: 700;
+  color: #111827;
+}
+
+.commit-message {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.commit-branch {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}

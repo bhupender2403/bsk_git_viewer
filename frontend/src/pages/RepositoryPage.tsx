@@ -1,3 +1,4 @@
+import BranchGraph from "../components/BranchGraph/BranchGraph";
 import RepoTimeLine from "../components/RepoTimeLine";
 import type { ResponseData } from "../types/git";
 
@@ -6,5 +7,8 @@ interface Props {
 }
 
 export default function RepositoryPage({ repo }: Props) {
-  return <RepoTimeLine repo={repo} />;
+  return <div>
+          <RepoTimeLine repo={repo} />
+          <BranchGraph/>
+        </div>
 }
