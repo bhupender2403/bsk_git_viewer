@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import DefaultDict
 
-from bsk_git_viewer.utils.treediff import TreeDiff
+from bsk_git_viewer.git.tree_diff import TreeDiff
 from itertools import combinations
 from collections import Counter
 
