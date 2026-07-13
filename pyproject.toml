@@ -17,10 +17,19 @@ dependencies = [
 	"dulwich",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
 [project.scripts]
 bsk-git-viewer = "bsk_git_viewer.cli:cmd_app"
 bsk-git-debug = "bsk_git_viewer.debug:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
 
