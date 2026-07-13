@@ -1,27 +1,9 @@
-from dataclasses import dataclass, field
-from typing import Any
+
 from dulwich.repo import Repo
 from dulwich.objects import Tree, Blob
 
+from bsk_git_viewer.models import GitTreeNode
 
-@dataclass
-class GitTreeNode:
-    name: str
-    path: str
-    type: str  # "tree" or "blob"
-    object_id: str
-    mode: str
-    children: list["GitTreeNode"] = field(default_factory=list)
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "path": self.path,
-            "type": self.type,
-            "object_id": self.object_id,
-            "mode": self.mode,
-            "children": [child.to_dict() for child in self.children],
-        }
 
 
 class DulwichTreeLoader:
