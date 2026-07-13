@@ -3,10 +3,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from bsk_git_viewer.inference.commit_sequence_extraction import extract_main_commits
+from bsk_git_viewer.git.commit_sequence_extraction import extract_main_commits
 
-
-@patch("bsk_git_viewer.inference.commit_sequence_extraction.to_commit_info")
+@patch("bsk_git_viewer.git.commit_sequence_extraction.to_commit_info")
 def test_extract_main_commits_reads_commit_from_main_ref(
     mock_to_commit_info:Mock
 )->None:
@@ -39,7 +38,7 @@ def test_extract_main_commits_reads_commit_from_main_ref(
 
 
 
-@patch("bsk_git_viewer.inference.commit_sequence_extraction.to_commit_info")
+@patch("bsk_git_viewer.git.commit_sequence_extraction.to_commit_info")
 def test_extract_main_commits_error_on_missing_main_ref(
         mock_to_commit_info=Mock()
 ):
@@ -58,7 +57,7 @@ def test_extract_main_commits_error_on_missing_main_ref(
     repo.get_walker.assert_not_called()
     mock_to_commit_info.assert_not_called()
 
-@patch("bsk_git_viewer.inference.commit_sequence_extraction.to_commit_info")
+@patch("bsk_git_viewer.git.commit_sequence_extraction.to_commit_info")
 def test_extract_main_commits_walks_from_main_ref(
     mock_to_commit_info = Mock
 ):
