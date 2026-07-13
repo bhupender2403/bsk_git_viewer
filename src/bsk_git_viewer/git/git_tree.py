@@ -28,7 +28,7 @@ class DulwichTreeLoader:
     """
     Loads GitTreeNode for each commit in the repository
 
-    - Read and create only the structure not blobs 
+    - Read and create only the structure, does not load data in blobs.
     """
     def __init__(self, repo: Repo):
         self.repo = repo
