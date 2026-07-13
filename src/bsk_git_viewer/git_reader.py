@@ -2,7 +2,9 @@ from pathlib import Path
 from dulwich.repo import Repo
 
 from bsk_git_viewer.models import CommitInfo, Repository
+from dulwich.reflog import read_reflog
 
+from bsk_git_viewer.utils.parse_utils import to_commit_info
 
 def analyze_repository(path:Path):
     repo_path = Path(path).resolve()
@@ -33,17 +35,31 @@ def analyze_repository(path:Path):
     }
 
 
-def _to_commit_info(entry):
-    commit = entry.commit
-    return CommitInfo(commit_id=commit.id.decode(),author = commit.author.decode(),message = commit.message.decode(), commit_time = int(commit.commit_time),parents = [x.decode() for x in commit.parents])
 
 def read_repository(repo_path:str|Path):
     
     repo_path = Path(repo_path)
 
     repo = Repo(repo_path)
-    
-    commits = [_to_commit_info(x) for x in repo.get_walker()]
+
+    refs = repo.get_refs()
+
+    heads = [
+        sha
+        for name, sha in refs.items()
+        if name.startswith(b"refs/heads/")
+    ]
+
+    print(refs)
+    print(repo.head())
+
+    commits = [to_commit_info(x) for x in repo.get_walker(include=heads)]
+
+    with open(Path(repo.controldir()) / "logs/HEAD", "rb") as f:
+        entries = list(read_reflog(f))
+
+    for entry in entries:
+        print(entry.old_sha, entry.new_sha, entry.message)
 
     return Repository(name = repo_path.name,commits = commits, branches = dict())
 
