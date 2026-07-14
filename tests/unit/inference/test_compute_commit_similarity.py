@@ -1,11 +1,11 @@
 
 from dataclasses import dataclass
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 
-from bsk_git_viewer.inference.compute_commit_similarity import compute_changeset_score, compute_similarity_score_for_change, extract_candidates_for_similarity
+from bsk_git_viewer.inference.compute_commit_similarity import compute_changeset_score, compute_similarity_score, compute_similarity_score_for_change, extract_candidates_for_similarity
 from bsk_git_viewer.models import CommitInfo, CommitWithPreDiff, FileChange, LineChange, TreeDiff
 
 
@@ -180,3 +180,37 @@ def test_compute_similarity_score_for_change_status(status1, status2, score_exp)
 
     score = compute_similarity_score_for_change(change1, change2)
     assert score == score_exp
+
+
+@pytest.mark.parametrize(
+        "pathlist1, pathlist2, similarity_scores,score_exp, call_count",
+        [
+            ([],[],[],0, 0),
+            (["p1"],["p1"],[50],50, 1),
+             (["p1","p2"],["p1"],[50],50, 1),
+             (["p1","p2","p3"],["p1","p3","p4"],[50,100],75, 2),
+            
+        ]
+)
+@patch("bsk_git_viewer.inference.compute_commit_similarity.compute_similarity_score_for_change")
+def test_compute_similarity_score(mock_compute_similarity_score_for_change,pathlist1, pathlist2, similarity_scores,score_exp, call_count):
+    mock_compute_similarity_score_for_change.side_effect = similarity_scores
+
+    def mock_tree_diff(paths):
+        treediff = MagicMock(spec = TreeDiff)
+        files = []
+        for path in paths:
+            mockfile = MagicMock(spec = FileChange)
+            mockfile.path = path
+            files.append(mockfile)
+        treediff.files = files
+        return treediff
+    
+    tree1 = mock_tree_diff(pathlist1)
+    tree2 = mock_tree_diff(pathlist2)
+
+    score = compute_similarity_score(tree1,tree2)
+
+    assert score == pytest.approx(score_exp,0.01)
+
+    assert mock_compute_similarity_score_for_change.call_count == call_count

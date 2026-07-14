@@ -34,7 +34,7 @@ def compute_similarity_score(diff_one:TreeDiff, diff_two:TreeDiff):
 
     other_paths = {x.path:x for x in diff_two.files}
     
-    similar_paths = paths.intersection(other_paths)
+    similar_paths = set(paths.keys()).intersection(set(other_paths.keys()))
 
     if len(similar_paths)==0:
         return 0
