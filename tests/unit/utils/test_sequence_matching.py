@@ -7,6 +7,7 @@ from bsk_git_viewer.utils.sequence_matching import match_sequences
 @pytest.mark.parametrize(
         "first_sequences, second_sequences, additions_exp, deletions_exp",
         [
+            ([],[],[],[]),
             (["a1"],[],[],["a1"]),
             ([],["a1"],["a1"],[]),
             (["a1"],["a1"],[],[]),
@@ -28,4 +29,4 @@ def test_match_sequences(first_sequences, second_sequences, additions_exp, delet
     
     for deleted in deletions:
         assert deleted.content in deletions_exp
-        
+
