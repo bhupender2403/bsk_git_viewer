@@ -1,7 +1,7 @@
 from pathlib import Path
 from dulwich.repo import Repo
 
-from bsk_git_viewer.models import CommitInfo, Repository
+from bsk_git_viewer.models import  Repository
 from dulwich.reflog import read_reflog
 
 from bsk_git_viewer.utils.parse_utils import to_commit_info

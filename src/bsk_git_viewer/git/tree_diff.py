@@ -1,6 +1,5 @@
-from dataclasses import dataclass, field
+
 from difflib import SequenceMatcher
-from typing import Any, Literal
 
 from bsk_git_viewer.models import FileChange, GitTreeNode, LineChange, TreeDiff
 
