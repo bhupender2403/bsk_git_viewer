@@ -95,3 +95,13 @@ class TreeDiff:
                 for f in self.files
             ]
         }
+    
+@dataclass
+class CommitWithTree:
+    commit:CommitInfo
+    gittree:GitTreeNode
+
+@dataclass 
+class CommitWithPreDiff:
+    commit:CommitInfo
+    pre_diff:TreeDiff
