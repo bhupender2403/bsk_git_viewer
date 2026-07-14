@@ -2,7 +2,6 @@
 from dataclasses import dataclass
 from unittest.mock import MagicMock
 
-from dulwich.refs import extract_branch_name
 
 from bsk_git_viewer.inference.compute_commit_similarity import extract_candidates_for_similarity
 from bsk_git_viewer.models import CommitInfo, CommitWithPreDiff, FileChange, TreeDiff

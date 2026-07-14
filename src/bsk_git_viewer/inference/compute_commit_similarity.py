@@ -4,6 +4,10 @@ from bsk_git_viewer.models import  CommitWithPreDiff
 
 
 def extract_candidates_for_similarity(commit:CommitWithPreDiff, commit_list:list[CommitWithPreDiff]):
+    """
+    Return candidates for similarity based on paths with changes in commits. Any commit sharing a path
+    with change are considered to be a candidate for similarity.
+    """
     
     file_change_paths =  {x.path for x in commit.pre_diff.files}
 
