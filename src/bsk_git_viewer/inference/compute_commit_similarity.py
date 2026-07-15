@@ -6,7 +6,7 @@ from bsk_git_viewer.models import  CommitWithPreDiff, FileChange, TreeDiff
 from bsk_git_viewer.utils.sequence_matching import match_sequences
 
 
-def extract_candidates_for_similarity(commit:CommitWithPreDiff, commit_list:list[CommitWithPreDiff]):
+def extract_candidates_for_similarity(commit:CommitWithPreDiff, commit_list:list[CommitWithPreDiff]) -> list[CommitWithPreDiff]:
     """
     Return candidates for similarity based on paths with changes in commits. Any commit sharing a path
     with change are considered to be a candidate for similarity.
@@ -18,7 +18,7 @@ def extract_candidates_for_similarity(commit:CommitWithPreDiff, commit_list:list
     if len(file_change_paths)==0:
         return []
     else:
-        candidates = []
+        candidates:list[CommitWithPreDiff] = []
 
 
         for candidate in commit_list:
