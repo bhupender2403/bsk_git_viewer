@@ -155,7 +155,11 @@ def test_compute_similarity_score_for_change_file_modification(addition1, deleti
     change2 = mock_change("f1","modified",addition2, deletion2)
     
     score = compute_similarity_score_for_change(change1, change2)
+
+    score_opp = compute_similarity_score_for_change(change2,change1)
+
     assert score == pytest.approx(score_exp,0.01)
+    assert score == score_opp
 
 
 @pytest.mark.parametrize(
@@ -194,7 +198,7 @@ def test_compute_similarity_score_for_change_status(status1, status2, score_exp)
 )
 @patch("bsk_git_viewer.inference.compute_commit_similarity.compute_similarity_score_for_change")
 def test_compute_similarity_score(mock_compute_similarity_score_for_change,pathlist1, pathlist2, similarity_scores,score_exp, call_count):
-    mock_compute_similarity_score_for_change.side_effect = similarity_scores
+    mock_compute_similarity_score_for_change.side_effect = similarity_scores+similarity_scores
 
     def mock_tree_diff(paths):
         treediff = MagicMock(spec = TreeDiff)
@@ -210,7 +214,9 @@ def test_compute_similarity_score(mock_compute_similarity_score_for_change,pathl
     tree2 = mock_tree_diff(pathlist2)
 
     score = compute_similarity_score(tree1,tree2)
+    score_opp = compute_similarity_score(tree2,tree1)
 
     assert score == pytest.approx(score_exp,0.01)
+    assert score == score_opp
 
-    assert mock_compute_similarity_score_for_change.call_count == call_count
+    assert mock_compute_similarity_score_for_change.call_count == call_count*2
