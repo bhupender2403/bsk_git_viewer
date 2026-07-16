@@ -5,7 +5,7 @@ from dulwich.errors import NotGitRepository
 from dulwich.repo import Repo
 import pytest
 
-from bsk_git_viewer.gitcreate.git_sceneria_creator import GitScenarioRunner, parse_scenario
+from bsk_git_viewer.gitcreate.git_sceneria_creator import GitScenarioRunner, ScenarioError, parse_scenario
 
 
 @pytest.mark.parametrize(
@@ -187,6 +187,193 @@ change_branch#main"""
     assert os.path.exists(tmp_path/"Readme.md")
 
     assert  os.path.exists(tmp_path/"Readme.v2") 
+
+
+
+
+
+
+def test_git_scenrio_rebase(tmp_path):
+    commands =  """init
+write#Readme.md#new#adding readme
+This is a readme file
+write_end"""
+
+    run_commands(commands, tmp_path)
+
+    assert os.path.exists(tmp_path/"Readme.md")
+
+    createbranchcommands = """create_branch#feature
+change_branch#feature
+write#Readme.v2#new#adding readme
+This is a readme file
+write_end"""
+
+    run_commands(createbranchcommands, tmp_path)
+
+    assert os.path.exists(tmp_path/"Readme.md")
+
+    assert os.path.exists(tmp_path/"Readme.v2")
+
+    commands = """change_branch_main
+write#Readme.v3#new#adding readme
+This is a readme file
+write_end"""
+
+    run_commands(commands, tmp_path)
+
+    assert os.path.exists(tmp_path/"Readme.md")
+
+    assert not os.path.exists(tmp_path/"Readme.v2") 
+
+    assert os.path.exists(tmp_path/"Readme.v3") 
+
+    repo = Repo(tmp_path)
+    branches = {
+        ref.decode(): sha.decode()
+        for ref, sha in repo.refs.as_dict().items()
+        if ref.startswith(b"refs/heads/")
+    }
+    assert len(branches) == 2
+
+    run_commands("list_branches\nshow_head\nchange_branch#feature", tmp_path)
+
+    merge_command = """rebase#main"""
+
+    run_commands(merge_command,tmp_path)
+
+    assert os.path.exists(tmp_path/"Readme.md")
+
+    assert  os.path.exists(tmp_path/"Readme.v2") 
+
+@pytest.mark.parametrize(
+        "conflict_handler",
+        [
+            ("abort"),
+            ("skip"),
+            ("continue")
+        ]
+        
+)
+def test_git_scenrio_rebase_with_conflict(tmp_path, conflict_handler):
+    commands =  """init
+write#Readme.md#new#adding readme
+This is a readme file
+write_end"""
+
+    run_commands(commands, tmp_path)
+
+    assert os.path.exists(tmp_path/"Readme.md")
+
+    createbranchcommands = """create_branch#feature
+change_branch#feature
+write#Readme.v2#new#adding readme
+This is a readme file
+write_end
+write#src/Readme.v5#new#adding readme
+This is a readme file
+write_end
+write#src/Readme.v6#new#adding readme
+This is a readme file
+write_end"""
+
+    run_commands(createbranchcommands, tmp_path)
+
+    assert os.path.exists(tmp_path/"Readme.md")
+
+    assert os.path.exists(tmp_path/"Readme.v2")
+
+    commands = """change_branch_main
+write#Readme.v3#new#adding readme
+This is a readme file
+write_end
+write#src/Readme.v5#new#adding readme
+This is a removed file
+something els is written
+write_end"""
+
+    run_commands(commands, tmp_path)
+
+    with open(tmp_path/"src/Readme.v5","rt") as fd:
+        v5main_data = fd.read()
+
+    assert os.path.exists(tmp_path/"Readme.md")
+
+    assert not os.path.exists(tmp_path/"Readme.v2") 
+
+    assert os.path.exists(tmp_path/"Readme.v3") 
+
+    repo = Repo(tmp_path)
+    branches = {
+        ref.decode(): sha.decode()
+        for ref, sha in repo.refs.as_dict().items()
+        if ref.startswith(b"refs/heads/")
+    }
+    assert len(branches) == 2
+
+    run_commands("change_branch#feature", tmp_path)
+
+    merge_command = """rebase#main"""
+
+    with pytest.raises(ScenarioError):
+        run_commands(merge_command,tmp_path)
+
+    
+    if conflict_handler=="abort":    
+        resolve_commands = "rebase_abort"
+    elif conflict_handler=="skip":
+        resolve_commands = "rebase_skip"
+    elif conflict_handler=="continue":
+        final_data = """This is the data
+with resolve"""
+        resolve_commands = """write_no_commit#src/Readme.v5#overwrite
+"""+final_data+"""
+write_end
+add#src/Readme.v5
+rebase_continue
+"""        
+
+
+    run_commands(resolve_commands,tmp_path)
+
+    commands = """change_branch#main"""
+    run_commands(commands, tmp_path)
+
+    if conflict_handler=="abort":
+        assert not os.path.exists(tmp_path/"src/Readme.v6")        
+        assert not os.path.exists(tmp_path/"Readme.v2")
+    elif conflict_handler=="skip":
+        commands = "rebase#feature"
+        run_commands(commands,tmp_path)
+
+        assert os.path.exists(tmp_path/"Readme.v2")
+
+        assert os.path.exists(tmp_path/"src/Readme.v6")    
+        assert os.path.exists(tmp_path/"src/Readme.v5")    
+        
+        with open(tmp_path/"src/Readme.v5","rt") as fd:
+            v5main_data_after_rebase_skip = fd.read()
+        assert v5main_data == v5main_data_after_rebase_skip
+    elif conflict_handler =="conflict":
+        commands = "rebase#feature"
+        run_commands(commands,tmp_path)
+
+        assert os.path.exists(tmp_path/"Readme.v2")
+
+        assert os.path.exists(tmp_path/"src/Readme.v6")    
+        assert os.path.exists(tmp_path/"src/Readme.v5")    
+        
+        with open(tmp_path/"src/Readme.v5","rt") as fd:
+            v5main_data_after_rebase_continue = fd.read()
+        assert final_data == v5main_data_after_rebase_continue
+
+        
+    
+    
+
+
+
+
 
 
 

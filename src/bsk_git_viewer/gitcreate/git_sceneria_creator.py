@@ -76,6 +76,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -154,6 +155,11 @@ class GitScenarioRunner:
             "merge_branch": self._cmd_merge_branch,
             "merge_branch_with_main": self._cmd_merge_branch_with_main,
             "delete_branch": self._cmd_delete_branch,
+            "rebase": self._cmd_rebase,
+            "rebase_onto": self._cmd_rebase_onto,
+            "rebase_skip":self._cmd_rebase_skip,
+            "rebase_abort":self._cmd_rebase_abort,
+            "rebase_continue":self._cmd_rebase_continue,
             "tag": self._cmd_tag,
             "delete_tag": self._cmd_delete_tag,
             "reset_hard": self._cmd_reset_hard,
@@ -226,14 +232,14 @@ class GitScenarioRunner:
     def _current_branch_name(self, repo: Repo | None = None) -> str | None:
         repo = repo or self._repo()
         head_ref = repo.refs.read_ref(b"HEAD")
-
+        
         if head_ref is None:
             return None
 
         if isinstance(head_ref, bytes) and head_ref.startswith(
-            b"refs/heads/"
+            b"ref: refs/heads/"
         ):
-            return head_ref.removeprefix(b"refs/heads/").decode(
+            return head_ref.removeprefix(b"ref: refs/heads/").decode(
                 "utf-8",
                 errors="replace",
             )
@@ -245,35 +251,45 @@ class GitScenarioRunner:
         if not clean_name:
             raise ScenarioError("Branch name cannot be empty")
         return b"refs/heads/" + clean_name.encode("utf-8")
-
+    
     def _switch_branch(self, branch_name: str) -> None:
-        """
-        Switch HEAD and update the working tree.
-
-        `porcelain.checkout_branch` is used when available. The fallback uses
-        `porcelain.checkout`, which is present in newer Dulwich releases.
-        """
-
         repo = self._repo()
         branch_ref = self._branch_ref(branch_name)
 
         if branch_ref not in repo.refs:
             raise ScenarioError(f"Branch does not exist: {branch_name!r}")
 
+        switch = getattr(porcelain, "switch", None)
         checkout_branch = getattr(porcelain, "checkout_branch", None)
-        if callable(checkout_branch):
-            checkout_branch(repo, branch_name)
-            return
-
         checkout = getattr(porcelain, "checkout", None)
-        if callable(checkout):
-            checkout(repo, branch_name)
-            return
 
-        raise ScenarioError(
-            "This Dulwich version has neither checkout_branch() nor "
-            "checkout(). Upgrade Dulwich."
-        )
+        if callable(switch):
+            switch(repo, branch_name, detach=False)
+        elif callable(checkout_branch):
+            checkout_branch(repo, branch_name)
+        elif callable(checkout):
+            checkout(repo, branch_ref)
+        else:
+            raise ScenarioError(
+                "This Dulwich version has no supported branch-switch function."
+            )
+
+        self._assert_head_on_branch(repo, branch_ref)
+
+    def _assert_head_on_branch(
+        self,
+        repo: Repo,
+        expected_branch_ref: bytes,
+    ) -> None:
+        ref_chain, _ = repo.refs.follow(b"HEAD")
+
+        if expected_branch_ref not in ref_chain:
+            chain = [ref.decode() for ref in ref_chain]
+
+            raise ScenarioError(
+                f"Branch checkout failed: expected HEAD to reference "
+                f"{expected_branch_ref.decode()!r}, got {chain!r}"
+            )
 
     def _stage_and_commit(self, paths: list[str], message: str) -> bytes:
         repo = self._repo()
@@ -671,6 +687,88 @@ class GitScenarioRunner:
             or (git_dir / "rebase-apply").exists()
         )
     
+    def _cmd_rebase(self, command: ParsedCommand) -> None:
+        """
+        Rebase the currently checked-out branch onto another branch or commit.
+
+        Scenario syntax:
+
+            rebase#main
+            rebase#commit_id
+        """
+
+        self._require_arg_count(
+            command,
+            minimum=1,
+            maximum=1,
+        )
+
+        target = command.args[0]
+        current_branch = self._current_branch_name()
+
+        if current_branch is None:
+            raise ScenarioError(
+                "Cannot rebase while HEAD is detached"
+            )
+
+        if current_branch == target:
+            raise ScenarioError(
+                f"Cannot rebase branch {current_branch!r} onto itself"
+            )
+
+        result = self._run_native_git(
+            "rebase",
+            target,
+            check=False,
+        )
+
+        if result.returncode != 0:
+            if self._is_rebase_in_progress():
+                raise ScenarioError(
+                    "Rebase stopped because of conflicts.\n"
+                    "Resolve the files, stage them with add/add_all, then run "
+                    "'rebase_continue'. Use 'rebase_abort' to cancel."
+                )
+
+            details = result.stderr.strip() or result.stdout.strip()
+            raise ScenarioError(f"Rebase failed: {details}")
+    
+    def _run_native_git(
+        self,
+        *arguments: str,
+        check: bool = True,
+    ) -> subprocess.CompletedProcess[str]:
+        """
+        Run native Git inside the target repository.
+
+        Native Git is used for operations such as rebase because it provides
+        complete conflict handling, continue, abort, and skip behaviour.
+        """
+
+        command = ["git", "-C", str(self.root), *arguments]
+
+        result = subprocess.run(
+            command,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        if check and result.returncode != 0:
+            details = result.stderr.strip() or result.stdout.strip()
+
+            raise ScenarioError(
+                f"Git command failed: {' '.join(command)}\n{details}"
+            )
+
+        if result.stdout.strip():
+            self._print(result.stdout.rstrip())
+
+        if result.stderr.strip():
+            self._print(result.stderr.rstrip())
+
+        return result
+
     def _cmd_rebase_onto(self, command: ParsedCommand) -> None:
         """
         Rebase commits after `upstream` onto `new_base`.
